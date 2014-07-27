@@ -1,6 +1,6 @@
 # reading data
-x_test<-read.table("d:/egor/r/data/UCI HAR Dataset/test/x_test.txt")
-x_train<-read.table("D:\\Egor\\R\\Data\\UCI HAR Dataset\\train\\X_train.txt" )
+x_test<-read.table("x_test.txt")
+x_train<-read.table("X_train.txt" )
 
 #merging
 mergeddata<-merge(x_test,x_train,all=TRUE)
@@ -27,7 +27,7 @@ for (i in (0:3)){
 neatdata<-mergeddata[,index]
 
 #let's name our columns
-names<-read.table("D:\\Egor\\R\\Data\\UCI HAR Dataset\\features.txt")
+names<-read.table("features.txt")
 
 neatnames<-names[index,]
 
@@ -35,8 +35,8 @@ colnames(neatdata)<-neatnames[,2]
 
 #let's add a column with corresponding activity. First, read the data
 
-y_train<-read.table("D:\\Egor\\R\\Data\\UCI HAR Dataset\\train\\y_train.txt" )
-y_test<-read.table("d:/egor/r/data/UCI HAR Dataset/test/y_test.txt")
+y_train<-read.table("y_train.txt" )
+y_test<-read.table("y_test.txt")
 
 #creating the vector with all the activities in the right order
 row_index<-append(y_test$V1,y_train$V1)
@@ -72,8 +72,8 @@ neatdata <- neatdata[, c(col_idx, (1:ncol(neatdata))[-col_idx])]
 
 #now same thing for subject's IDs
 
-subject_train<-read.table("D:\\Egor\\R\\Data\\UCI HAR Dataset\\train\\subject_train.txt" )
-subject_test<-read.table("d:/egor/r/data/UCI HAR Dataset/test/subject_test.txt")
+subject_train<-read.table("subject_train.txt" )
+subject_test<-read.table("subject_test.txt")
 subject<-append(subject_test$V1,subject_train$V1)
 neatdata$Subject<-subject
 col_idx <- grep("Subject", names(neatdata))
