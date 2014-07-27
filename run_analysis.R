@@ -79,4 +79,22 @@ neatdata$Subject<-subject
 col_idx <- grep("Subject", names(neatdata))
 neatdata <- neatdata[, c(col_idx, (1:ncol(neatdata))[-col_idx])]
 
-#from neat to tidy
+#let's split it by Activity and Subject
+subj_activity<-neatdata[,1:2]
+
+split_list<-split(neatdata,subj_activity)
+
+#let's take some means
+tidy_list<-lapply(split_list,function(x) colMeans(x[, 3:68]))
+
+#from list to matrix
+tidy_matrix<-matrix(nrow=180,ncol=66)
+
+for (i in (1:180)){
+    tidy_matrix[i,]<-tidy_list[[i]]
+}
+rownames(tidy_matrix)<-names(tidy_list)
+colnames(tidy_matrix)<-names(tidy_list[[1]])
+
+#lets's save it
+write.table(tidy_matrix,"tidy_matrix.txt")
