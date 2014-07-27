@@ -79,3 +79,4 @@ neatdata$Subject<-subject
 col_idx <- grep("Subject", names(neatdata))
 neatdata <- neatdata[, c(col_idx, (1:ncol(neatdata))[-col_idx])]
 
+#from neat to tidy
