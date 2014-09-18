@@ -11,4 +11,12 @@ First, let's get our file and read some data.
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "stormdata.bz2")
 data_header<-read.csv("stormdata.bz2", header = FALSE, nrow = 1)
 take<-c("BGN_DATE", "BGN_TIME", "STATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "CROPDMG")
+takecols <- ifelse(t(data_header) %in% take, NA, 'NULL')
+data<-read.csv("stormdata.bz2", colClasses=takecols)
+```
+
+Let's see what we got:
+
+```{r}
+head(data)
 ```
