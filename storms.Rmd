@@ -1,0 +1,14 @@
+---
+title: "Analyzing Storm Data"
+author: "Egor Ignatenkov"
+date: "Thursday, September 18, 2014"
+output: html_document
+---
+
+First, let's get our file and read some data.
+
+```{r download, cache=TRUE}
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "stormdata.bz2")
+data_header<-read.csv("stormdata.bz2", header = FALSE, nrow = 1)
+take<-c("BGN_DATE", "BGN_TIME", "STATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "CROPDMG")
+```
