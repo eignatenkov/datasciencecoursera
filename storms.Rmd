@@ -18,5 +18,5 @@ data<-read.csv("stormdata.bz2", colClasses=takecols)
 Let's see what we got:
 
 ```{r}
-head(data)
+head(data, n = 10)
 ```
