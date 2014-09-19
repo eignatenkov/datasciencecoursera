@@ -20,3 +20,16 @@ Let's see what we got:
 ```{r}
 head(data, n = 10)
 ```
+
+Now, let's try to answer this question:
+
+####Across the United States, which types of events are most harmful with respect to population health?
+
+We will have to look to the "EVTYPE" column. The data in that column is not very neat: there are some entries that differ only by uppercase/lowercase (WIND/Wind) or plural/singular form (WILDFIRE/WILDFIRES), so we'll have to do some cleaning. 
+
+First, we get rid from rows with 0 injuries (for our purposes there's no point in dealing with WIND/Wind problems if there's no injuries stated in "Wind" entries; it's easier just to remove all such rows)
+
+```{r}
+pop_health<-aggregate(INJURIES ~ EVTYPE, data = data, sum)
+pop_health
+```
