@@ -1,11 +1,13 @@
 ---
-title: "Analyzing Storm Data"
-author: "Egor Ignatenkov"
-date: "Thursday, September 18, 2014"
+title: "Most harmful weather events in USA"
 output: html_document
 ---
 
 ###Synopsys
+
+In this report we aim to detect the most harmful weather events in the USA considering economic impact as well as human injuries. We used the data from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage.
+
+We found out that tornadoes have caused more human injuries than other weather events. They are also (along with thungerstorms) the source of the most part of property damage. And the main reason for crops damage is hail.
 
 ###Data processing
 
@@ -22,25 +24,50 @@ data<-read.csv("stormdata.bz2", colClasses=takecols)
 We will have to look to the "EVTYPE" column. The data in that column is not very neat: there are some entries that differ only by uppercase/lowercase (WIND/Wind) or plural/singular form (WILDFIRE/WILDFIRES), so we'll have to do some cleaning. 
 
 ```{r cleaning}
-data$EVTYPE<-gsub('(?i).*WIND.*', 'THUNDERSTORM WIND', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FLOOD.*', 'FLOOD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FLD.*', 'FLOOD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FIRE.*', 'WILDFIRE', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*HAIL.*', 'HAIL', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*HEAT.*', 'HEAT', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*HURRICANE.*', 'HURRICANE', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FOG.*', 'FOG', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*WINTER STORM.*', 'ICE STORM', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*BLIZZARD.*', 'ICE STORM', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*WINTER WEATHER.*', 'EXTREME COLD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FROST.*', 'EXTREME COLD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*FREEZE.*', 'EXTREME COLD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*COLD.*', 'EXTREME COLD', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*CURRENT.*', 'RIP CURRENTS', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*RAIN.*', 'HEAVY RAIN', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*SNOW.*', 'HEAVY SNOW', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*TROPICAL STORM.*', 'TROPICAL STORM', data$EVTYPE)
-data$EVTYPE<-gsub('(?i).*STORM SURGE.*', 'STORM SURGE', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*WIND.*', 'Thunderstorm', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FLOOD.*', 'Flood', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FLD.*', 'Flood', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FIRE.*', 'Wildfire', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HAIL.*', 'Hail', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HEAT.*', 'Heat', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HURRICANE.*', 'Hurricane', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FOG.*', 'Fog', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*WINTER STORM.*', 'Ice storm', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*BLIZZARD.*', 'Ice storm', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*WINTER WEATHER.*', 'Extreme cold', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FROST.*', 'Extreme cold', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FREEZE.*', 'Extreme cold', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*COLD.*', 'Extreme cold', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*CURRENT.*', 'Rip currents', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*RAIN.*', 'Heavy rain', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*SNOW.*', 'Heavy snow', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*TROPICAL STORM.*', 'Tropical storm', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*STORM SURGE.*', 'Storm surge', data$EVTYPE)
+```
+
+Let's prepare the data for answering the question "Across the United States, which types of events are most harmful with respect to population health?":
+
+```{r}
+pop_health<-aggregate(INJURIES ~ EVTYPE, data = data, sum)
+pop_h<-head(pop_health[order(-pop_health$INJURIES),],10)
+```
+
+As you can see, we've copied top-10 events into the table pop_h to plot them afterwards. 
+
+Now let's prepare the data for answering the question "Across the United States, which types of events have the greatest economic consequences?":
+
+First, let's check property damage:
+
+```{r}
+prop_damage<-aggregate(PROPDMG ~ EVTYPE, data = data, sum)
+prop_d<-head(prop_damage[order(-prop_damage$PROPDMG),],10)
+```
+
+Now let's check crop damage:
+
+```{r}
+crop_damage<-aggregate(CROPDMG ~ EVTYPE, data = data, sum)
+crop_d<-head(crop_damage[order(-crop_damage$CROPDMG),],10)
 ```
 
 
@@ -48,41 +75,27 @@ data$EVTYPE<-gsub('(?i).*STORM SURGE.*', 'STORM SURGE', data$EVTYPE)
 
 ####Across the United States, which types of events are most harmful with respect to population health?
 
-
-```{r}
-pop_health<-aggregate(INJURIES ~ EVTYPE, data = data, sum)
+```{r, fig.width=10}
+library(ggplot2)
+ggplot(pop_h, aes(EVTYPE, INJURIES))+geom_bar(stat="identity")
 ```
 
-Let's look on what's on top.
-
-```{r}
-head(pop_health[order(-pop_health$INJURIES),],20)
-```
-
-It's clear now that it's no point in dealing with typos and singular/plural forms anymore, since the results are quite obvious.
+We can see that tornadoes are the most harmful type of events.
 
 ####Across the United States, which types of events have the greatest economic consequences?
 
-First, let's check property damage:
+First, property damage:
 
-```{r}
-prop_damage<-aggregate(PROPDMG ~ EVTYPE, data = data, sum)
+```{r, fig.width=10}
+ggplot(prop_d, aes(EVTYPE, PROPDMG))+geom_bar(stat="identity")
 ```
 
-Let's look on what's on top.
+Thunderstorms are almost as bad as tornadoes, but still tornadoes are the main source of property damage.
 
-```{r}
-head(prop_damage[order(-prop_damage$PROPDMG),],20)
+Crop damage:
+
+```{r, fig.width=10}
+ggplot(crop_d, aes(EVTYPE, CROPDMG))+geom_bar(stat="identity")
 ```
 
-Now let's look at crop damage:
-
-```{r}
-crop_damage<-aggregate(CROPDMG ~ EVTYPE, data = data, sum)
-```
-
-Let's look on what's on top.
-
-```{r}
-head(crop_damage[order(-crop_damage$CROPDMG),],20)
-```
+Hail is the main source of crop damage.
