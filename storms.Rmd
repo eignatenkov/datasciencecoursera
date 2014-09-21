@@ -5,6 +5,10 @@ date: "Thursday, September 18, 2014"
 output: html_document
 ---
 
+###Synopsys
+
+###Data processing
+
 First, let's get our file and read some data.
 
 ```{r download, cache=TRUE}
@@ -15,38 +19,38 @@ takecols <- ifelse(t(data_header) %in% take, NA, 'NULL')
 data<-read.csv("stormdata.bz2", colClasses=takecols)
 ```
 
-Let's see what we've got:
+We will have to look to the "EVTYPE" column. The data in that column is not very neat: there are some entries that differ only by uppercase/lowercase (WIND/Wind) or plural/singular form (WILDFIRE/WILDFIRES), so we'll have to do some cleaning. 
 
-```{r}
-head(data, n = 10)
+```{r cleaning}
+data$EVTYPE<-gsub('(?i).*WIND.*', 'THUNDERSTORM WIND', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FLOOD.*', 'FLOOD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FLD.*', 'FLOOD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FIRE.*', 'WILDFIRE', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HAIL.*', 'HAIL', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HEAT.*', 'HEAT', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*HURRICANE.*', 'HURRICANE', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FOG.*', 'FOG', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*WINTER STORM.*', 'ICE STORM', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*BLIZZARD.*', 'ICE STORM', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*WINTER WEATHER.*', 'EXTREME COLD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FROST.*', 'EXTREME COLD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*FREEZE.*', 'EXTREME COLD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*COLD.*', 'EXTREME COLD', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*CURRENT.*', 'RIP CURRENTS', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*RAIN.*', 'HEAVY RAIN', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*SNOW.*', 'HEAVY SNOW', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*TROPICAL STORM.*', 'TROPICAL STORM', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*STORM SURGE.*', 'STORM SURGE', data$EVTYPE)
 ```
 
-Now, let's try to answer this question:
+
+###Results
 
 ####Across the United States, which types of events are most harmful with respect to population health?
 
-We will have to look to the "EVTYPE" column. The data in that column is not very neat: there are some entries that differ only by uppercase/lowercase (WIND/Wind) or plural/singular form (WILDFIRE/WILDFIRES), so we'll have to do some cleaning. 
 
-First, we get rid from rows with 0 injuries (for our purposes there's no point in dealing with WIND/Wind problems if there's no injuries stated in "Wind" entries; it's easier just to remove all such rows)
-
-```{r cleanzeros, cache=TRUE}
-data_new<-data.frame()
-for (i in seq(1:nrow(data))){
-if (data[i,6]!=0 ) {
-data_new<-rbind(data_new, data[i,])
-}
-}
-```
-
-Now we sum number of injuries by event type.
-
-```{r, cache=TRUE}
-pop_health<-aggregate(INJURIES ~ EVTYPE, data = data_new, sum)
-```
-
-Let's check how many entries we have:
 ```{r}
-nrow(pop_health)
+pop_health<-aggregate(INJURIES ~ EVTYPE, data = data, sum)
 ```
 
 Let's look on what's on top.
@@ -55,4 +59,30 @@ Let's look on what's on top.
 head(pop_health[order(-pop_health$INJURIES),],20)
 ```
 
-It's clear now that it's no point in dealing with typos, because tornadoes will obviously keep the first place (no more than 140 entries after top-20, each no more than 440, so total number of injuries under top-20 is less than 61600 and even if all of them are some typos of TSTM WIND they add up to less than 70000 which is less than 91346 injuries from tornadoes).
+It's clear now that it's no point in dealing with typos and singular/plural forms anymore, since the results are quite obvious.
+
+####Across the United States, which types of events have the greatest economic consequences?
+
+First, let's check property damage:
+
+```{r}
+prop_damage<-aggregate(PROPDMG ~ EVTYPE, data = data, sum)
+```
+
+Let's look on what's on top.
+
+```{r}
+head(prop_damage[order(-prop_damage$PROPDMG),],20)
+```
+
+Now let's look at crop damage:
+
+```{r}
+crop_damage<-aggregate(CROPDMG ~ EVTYPE, data = data, sum)
+```
+
+Let's look on what's on top.
+
+```{r}
+head(crop_damage[order(-crop_damage$CROPDMG),],20)
+```
