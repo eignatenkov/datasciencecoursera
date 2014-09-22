@@ -34,6 +34,7 @@ data$EVTYPE<-gsub('(?i).*HURRICANE.*', 'Hurricane', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*FOG.*', 'Fog', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*WINTER STORM.*', 'Ice storm', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*BLIZZARD.*', 'Ice storm', data$EVTYPE)
+data$EVTYPE<-gsub('(?i).*ICE STORM.*', 'Ice storm', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*WINTER WEATHER.*', 'Extreme cold', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*FROST.*', 'Extreme cold', data$EVTYPE)
 data$EVTYPE<-gsub('(?i).*FREEZE.*', 'Extreme cold', data$EVTYPE)
@@ -47,7 +48,7 @@ data$EVTYPE<-gsub('(?i).*STORM SURGE.*', 'Storm surge', data$EVTYPE)
 
 Let's prepare the data for answering the question "Across the United States, which types of events are most harmful with respect to population health?":
 
-```{r}
+```{r, cache=TRUE}
 pop_health<-aggregate(INJURIES ~ EVTYPE, data = data, sum)
 pop_h<-head(pop_health[order(-pop_health$INJURIES),],10)
 ```
@@ -58,14 +59,14 @@ Now let's prepare the data for answering the question "Across the United States,
 
 First, let's check property damage:
 
-```{r}
+```{r, cache=FALSE}
 prop_damage<-aggregate(PROPDMG ~ EVTYPE, data = data, sum)
 prop_d<-head(prop_damage[order(-prop_damage$PROPDMG),],10)
 ```
 
 Now let's check crop damage:
 
-```{r}
+```{r,cache=FALSE}
 crop_damage<-aggregate(CROPDMG ~ EVTYPE, data = data, sum)
 crop_d<-head(crop_damage[order(-crop_damage$CROPDMG),],10)
 ```
@@ -77,7 +78,8 @@ crop_d<-head(crop_damage[order(-crop_damage$CROPDMG),],10)
 
 ```{r, fig.width=10}
 library(ggplot2)
-ggplot(pop_h, aes(EVTYPE, INJURIES))+geom_bar(stat="identity")
+y_max<-max(pop_h$INJURIES)
+ggplot(pop_h, aes(x = EVTYPE, y = INJURIES, ymax=y_max+100))+geom_bar(aes(fill=EVTYPE), stat="identity")+ theme(axis.text.x = element_text(angle = 45, hjust = 1))+geom_text(aes(label = INJURIES), size = 3, position = "stack")
 ```
 
 We can see that tornadoes are the most harmful type of events.
@@ -87,7 +89,8 @@ We can see that tornadoes are the most harmful type of events.
 First, property damage:
 
 ```{r, fig.width=10}
-ggplot(prop_d, aes(EVTYPE, PROPDMG))+geom_bar(stat="identity")
+y_max<-max(prop_d$PROPDMG)
+ggplot(prop_d, aes(x = EVTYPE, y = PROPDMG, ymax=y_max+100))+geom_bar(aes(fill=EVTYPE), stat="identity")+ theme(axis.text.x = element_text(angle = 45, hjust = 1))+geom_text(aes(label = PROPDMG), size = 3, position = "stack")
 ```
 
 Thunderstorms are almost as bad as tornadoes, but still tornadoes are the main source of property damage.
@@ -95,7 +98,8 @@ Thunderstorms are almost as bad as tornadoes, but still tornadoes are the main s
 Crop damage:
 
 ```{r, fig.width=10}
-ggplot(crop_d, aes(EVTYPE, CROPDMG))+geom_bar(stat="identity")
+y_max<-max(crop_d$CROPDMG)
+ggplot(crop_d, aes(x = EVTYPE, y = CROPDMG, ymax=y_max+100))+geom_bar(aes(fill=EVTYPE), stat="identity")+ theme(axis.text.x = element_text(angle = 45, hjust = 1))+geom_text(aes(label = CROPDMG), size = 3, position = "stack")
 ```
 
 Hail is the main source of crop damage.
