@@ -1,0 +1,106 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Loading and preprocessing the data
+
+```{r readdata}
+library(ggplot2)
+library(knitr)
+setwd('c:/docs/git/RepData_PeerAssessment1')
+data<-read.csv('activity.csv')
+temp <- mapply(function(x, y) paste0(rep(x, y), collapse = ""), 0, 4 - nchar(data$interval))
+data$interval <- paste0(temp, data$interval)
+data$interval<-format(strptime(data$interval, format="%H%M"), format = "%H:%M")
+```
+
+## What is mean total number of steps taken per day?
+
+Making a histogram of the total number of steps taken each day. Note that the days that contain only missing values will be omitted.
+
+```{r plot_daily_steps}
+dailysteps<-aggregate(steps ~ date, data = data, na.rm = TRUE, sum)
+qplot(steps, data = dailysteps, binwidth=1000)
+```
+
+### Calculating mean & median:
+
+```{r}
+mean(dailysteps$steps)
+median(dailysteps$steps)
+```
+
+## What is the average daily activity pattern?
+
+now let's look at interval means
+
+```{r interval_means, fig.width=12}
+
+dap<-aggregate(steps ~ interval, data = data, na.rm = TRUE, mean)
+qplot(interval, steps, data = dap, group = "interval", geom="line") + scale_x_discrete(breaks = dap$interval[seq(1,length(dap$interval), 12)])
+```
+
+let's find the interval that contains the maximum number of steps:
+
+```{r max_interval}
+dap[which.max(dap$steps), 1]
+```
+
+well, seems to be correct (according to the plot :))
+
+## Imputing missing values
+
+Let's count all the missing values:
+
+```{r}
+sum(is.na(data))
+```
+
+Now let's replace all missing values with average number of steps for appropriate interval:
+
+```{r na_replace}
+newdata<-data
+for(i in seq(1:nrow(newdata))){
+    if (is.na(newdata$steps[i])){
+        newdata$steps[i]=dap[dap$interval == newdata$interval[i],2]
+    }
+}
+```
+
+Let's look on the new histogram:
+
+```{r new_hist}
+newdailysteps<-aggregate(steps ~ date, data = newdata, sum)
+qplot(steps, data = newdailysteps, binwidth=1000)
+```
+
+Much more 10000-steps-days than before.
+
+Let's calculate mean & median:
+
+```{r}
+mean(newdailysteps$steps)
+median(newdailysteps$steps)
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+First, add a factor variable with two levels - "weekday" and "weekend"
+
+```{r weekdays}
+Sys.setlocale("LC_TIME","English United States")
+newdata$weekday<-weekdays(as.Date(newdata$date))
+newdata$weekday[newdata$weekday %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")]<-"weekday"
+newdata$weekday[newdata$weekday %in% c("Saturday", "Sunday")]<-"weekend"
+newdata$weekday<-as.factor(newdata$weekday)
+```
+
+Then, let's draw some plots:
+
+```{r weekday_plots, fig.width=12}
+weekdata<-aggregate(steps ~ interval + weekday, data = newdata, mean)
+qplot(interval,steps,data = weekdata, group = "interval", geom="line")+scale_x_discrete(breaks = weekdata$interval[seq(1,length(weekdata$interval), 12)])+facet_grid(weekday~.)
+```
