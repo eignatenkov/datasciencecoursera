@@ -1,0 +1,71 @@
+---
+title: "StatInf Course Project Part 1"
+author: "Egor Ignatenkov"
+date: "27.10.2014"
+output: pdf_document
+---
+##Distribution of averages of exponentials
+
+
+In this paper we explore the properties of the distribution of the mean of $n = 40$ exponentionals. The rate parameter $\lambda$ is $0.2$, and that means that mean of our exponentional distribution is $\mu=1/\lambda$, i.e. $5$ and the standard deviation is also $\sigma=1/\lambda$, i.e. $5$.
+
+First, let's simulate our data. We will have $10000\times40$ matrix filled with exponentionally randomly generated values with rate parameter 0.2.
+
+```{r}
+n<-40
+nosim<-10000
+lambda<-0.2
+sim<-matrix(rexp(nosim*n,lambda),nosim)
+```
+
+Now, let's create a vector with means of all the rows. It will be our sample from the distribution of the means.
+
+```{r}
+means<-apply(sim,1,mean)
+```
+
+Central Limit Theorem tells us that this distribution should be normal with mean $\mu = 1/\lambda = 5$ and standard deviation $\sigma/\sqrt n = 5/\sqrt 40 = 0.79$. Since we were asked about variance, square that: $\sigma^2/n = 25/40 = 0.625$. Let's see what we've really got.
+
+###Mean of means
+
+First, let's look on mean of our distribution:
+
+```{r}
+mean(means)
+```
+
+Seems pretty close to $5$.
+
+###Variance
+
+Now, variance:
+
+```{r}
+sd(means)^2
+```
+
+Not so far from $0.625$.
+
+###Compare with normal distribution
+
+Let's compare the looks of our sample and normal distribution. 
+
+```{r}
+library(ggplot2)
+g<-qplot((means-mean(means))/sd(means),geom="density")
+g<-g+stat_function(fun = dnorm, size = 2)
+g
+```
+
+Again, quite close.
+
+### Coverage of the confidence interval
+
+We were also asked to evaluate the coverage of the confidence interval for $1/\lambda: \bar X \pm 1.96 S/\sqrt{n}$
+
+```{r}
+left<-mean(means)-1.96/(lambda*sqrt(n))
+right<-mean(means)+1.96/(lambda*sqrt(n))
+sum(means>left & means < right)/length(means)
+```
+And we almost hit 95% confidence interval, as we should have! Thank you very much.
