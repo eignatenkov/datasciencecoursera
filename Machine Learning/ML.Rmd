@@ -1,0 +1,52 @@
+---
+title: "Machine Learining Course Project"
+author: "Egor Ignatenkov"
+date: "22.12.2014"
+output: html_document
+---
+
+First, let's download our data.
+
+```{r,cache=TRUE}
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', method="wget",'training.csv')
+download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv', method = "wget", 'testing.csv')
+training<-read.csv('training.csv')
+testing<-read.csv('testing.csv')
+```
+
+Let's get rid from all variables that are NA's in testing data.
+
+```{r,cache=TRUE}
+training<-training[,-c(6,12:36,50:59,69:83,87:101,103:112,125:150)]
+testing<-testing[,-c(6,12:36,50:59,69:83,87:101,103:112,125:150)]
+```
+
+Let's also omit variables that are hardly likely to influence on class: IDs and timestamps and num_window.
+
+```{r,cache=TRUE}
+training<-training[,-c(1,3:6)]
+testing<-testing[,-c(1,3:6)]
+```
+
+We will use randomForest function to build our model.
+
+```{r}
+library(caret)
+library(randomForest)
+fit<-randomForest(classe~.,data=training)
+```
+
+Let's check how it's doing on training data:
+
+```{r}
+confusionMatrix(training$classe,predict(fit,newdata=training))
+```
+
+Now, let's do the prediction:
+
+```{r}
+answers<-predict(fit,newdata=testing)
+answers
+```
+
+That's it.
