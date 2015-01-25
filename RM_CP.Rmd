@@ -1,0 +1,61 @@
+---
+title: "Regression Models Course Project"
+author: "Egor Ignatenkov"
+date: "23.11.2014"
+output: pdf_document
+---
+
+##Relationship between type of transmission and fuel consumption
+
+###Executive summary
+
+In this report we're going to look on the relationship between type of transmission and fuel consumption. Although at first it may seem that using manual transmission significantly increases miles per gallon index, we will show that in reality this change is introduced by other parameters, such as horsepower and weight.
+
+###Research
+
+First, let's plot a simple boxplot to compare miles per gallon (mpg) in relation to type of transmission (0 - automatic, 1 - manual):
+
+```{r, echo=FALSE}
+data(mtcars)
+plot(factor(mtcars$am),mtcars$mpg, sub = "Figure 1. Miles per gallon 
+     for automatic and manual transmission", ylab = "Miles per gallon")
+```
+
+It seems that manual transmission implies much higher level of mgp. Let's check it with linear regression:
+
+```{r}
+fit<-lm(mpg~factor(am),data=mtcars)
+summary(fit)$coef
+```
+
+Now let's check some more complicated linear models with more parameters. E.g., it seems logical that mpg can higly depend on weight and horsepower of the car. Let's include these parameters into model and make a comparison:
+
+```{r}
+fit2<-update(fit,mpg~factor(am)+wt)
+fit3<-update(fit,mpg~factor(am)+wt+hp)
+anova(fit,fit2,fit3)
+```
+
+Seems that model with 3 parameters is significantly better. Let's look closer:
+```{r}
+summary(fit3)$coef
+```
+
+Now it seems that transmission type is quite insignificant (p-value for it is big. Let's look on the model without transmission:
+
+```{r}
+fit4<-lm(mpg~hp*wt,mtcars)
+summary(fit4)$coef
+```
+
+Let's check our residual plot:
+
+```{r}
+plot(fit4,which=1)
+```
+
+Residuals appear uncorrelated with the fit. 
+
+##Conclusion
+
+Main influence on miles per gallon index is done by weight of the car and its horsepower. Having these two parameters in considerations makes type of transmission insignificant.

@@ -1,0 +1,30 @@
+My test presentation
+========================================================
+author: Egor Ignatenkov
+date: `r date()`
+
+First slide
+========================================================
+transition: rotate
+
+For more details on authoring R presentations click the
+**Help** button on the toolbar.
+
+``
+}
+1+1
+```
+
+Slide With Code
+========================================================
+
+```{r}
+summary(cars)
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
