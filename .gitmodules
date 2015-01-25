@@ -1,0 +1,3 @@
+[submodule "census-app/slidify"]
+	path = census-app/slidify
+	url = /home/egor/datasciencecoursera/census-app/slidify
